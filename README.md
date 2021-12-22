@@ -1,5 +1,6 @@
 ## PyTorch Implementation of [AnimeGANv2](https://github.com/TachibanaYoshino/AnimeGANv2)
 
+[![Run on Ainize](https://ainize.herokuapp.com/static/images/run_on_ainize_button.svg)](https://ainize.web.app/redirect?git_repo=https://github.com/dev2l0per/animegan2-pytorch)
 
 **Updates**
 
