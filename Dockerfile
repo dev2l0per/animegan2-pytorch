@@ -1,7 +1,7 @@
 # FROM pytorch/pytorch:1.9.0-cuda10.2-cudnn7-runtime
 FROM    legosz/animeganv2:v1
 WORKDIR /app
-COPY    . .
+# COPY    . .
 
 RUN apt-get update && apt-get install -y git
 RUN pip install --upgrade pip
