@@ -1,0 +1,53 @@
+openapi: '3.0.2'
+info:
+  title: AnimeGANv2 Ainize API Swagger
+  description: AnimeGANv2 Ainize API Documentation
+  version: '1.0'
+  license:
+    name: MIT License
+    url: https://github.com/dev2l0per/animegan2-pytorch/blob/main/LICENSE
+  contact:
+    name: Ainizer - JungHyo Yang
+    email: z-_-z1-@naver.com
+
+servers:
+  - url: https://main-animegan2-pytorch-dev2l0per.endpoint.ainize.ai
+
+paths:
+  /animeganv2:
+    post:
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                pretrained:
+                  type: string
+                  enum: [celeba_distill, face_paint_512_v1, face_paint_512_v2, paprika]
+                file:
+                  type: string
+                  format: binary
+            encoding:
+              file:
+                contentType: image/png, image/jpg, image/jpeg
+      responses:
+        '200':
+          description: success
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Empty Field or Invalid Extension
+        '404':
+          description: Model Not Found
+        '500':
+          description: Server Error
+  /health:
+    get:
+      responses:
+        '200':
+          description: ok

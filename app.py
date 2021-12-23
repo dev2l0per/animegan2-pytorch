@@ -45,12 +45,15 @@ def animeganv2():
         return Response("Empty Field", status=400)
     
     if pretrained not in model_list:
-        return Response("Does not exist model", status=400)
+        return Response("Model Not Found", status=404)
 
     if file.content_type not in image_format:
-        return Response("File Error", status=400)
+        return Response("Invalid Extension", status=400)
 
-    result = generate(file, pretrained, file.content_type.split('/')[-1])
+    try:
+        result = generate(file, pretrained, file.content_type.split('/')[-1])
+    except:
+        return Response("Server Error", status=500)
     return send_file(result, mimetype=file.content_type)
 
 @app.route('/health', methods=['GET'])
@@ -62,4 +65,4 @@ def main():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port="5000")
+    app.run(host="0.0.0.0", port="5000")
