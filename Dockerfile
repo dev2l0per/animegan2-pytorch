@@ -1,5 +1,5 @@
 # FROM pytorch/pytorch:1.9.0-cuda10.2-cudnn7-runtime
-FROM    legosz/animeganv2:v1
+FROM    legosz/animeganv2:v2
 WORKDIR /app
 # COPY    . .
 

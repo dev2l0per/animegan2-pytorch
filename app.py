@@ -1,10 +1,11 @@
+from queue import Empty, Queue
+import threading
 from flask import (
     Flask, request, Response, send_file, render_template
 )
-from werkzeug.utils import secure_filename
 from io import BytesIO
 from PIL import Image
-import torch
+import torch, time
 
 
 torch.backends.cudnn.enabled = False
@@ -26,7 +27,25 @@ models = {
 }
 face2paint = torch.hub.load("bryandlee/animegan2-pytorch:main", "face2paint", device=device, size=512)
 
+requestsQueue = Queue()
+BATCH_SIZE = 1
+CHECK_INTERVAL = 0.1
+
+def handle_requests_by_batch():
+  while True:
+    requestsBatch = []
+    while not (len(requestsBatch) >= BATCH_SIZE):
+      try:
+        requestsBatch.append(requestsQueue.get(timeout=CHECK_INTERVAL))
+      except Empty:
+        continue
+      for request in requestsBatch:
+        request['output'] = generate(request['input'][0], request['input'][1], request['input'][2])
+
+threading.Thread(target=handle_requests_by_batch).start()
+
 def generate(file, pretrained, format):
+  try:
     binary = file.read()
     im_in = Image.open(BytesIO(binary)).convert("RGB")
     im_out = face2paint(models[pretrained], im_in, side_by_side=False)
@@ -35,6 +54,8 @@ def generate(file, pretrained, format):
     buffer_out.seek(0)
     
     return buffer_out
+  except Exception as e:
+    return "error"
 
 @app.route('/animeganv2', methods=['POST'])
 def animeganv2():
@@ -50,11 +71,20 @@ def animeganv2():
     if file.content_type not in image_format:
         return Response("Invalid Extension", status=400)
 
-    try:
-        result = generate(file, pretrained, file.content_type.split('/')[-1])
-    except:
-        return Response("Server Error", status=500)
-    return send_file(result, mimetype=file.content_type)
+    req = {
+      'input': [file, pretrained, file.content_type.split('/')[-1]]
+    };
+
+    requestsQueue.put(req)
+
+    while 'output' not in req:
+      time.sleep(CHECK_INTERVAL)
+    
+    io = req['output']
+    if io == "error":
+      return Response('Server Error', status=500)
+
+    return send_file(io, mimetype=file.content_type)
 
 @app.route('/health', methods=['GET'])
 def health_check():
