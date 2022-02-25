@@ -59,6 +59,9 @@ def generate(file, pretrained, format):
 
 @app.route('/animeganv2', methods=['POST'])
 def animeganv2():
+    if requestsQueue.qsize() > BATCH_SIZE:
+      return Response('Too Many Request', status=429)
+
     try:
         file = request.files['file']
         pretrained = request.form['pretrained']
@@ -73,7 +76,7 @@ def animeganv2():
 
     req = {
       'input': [file, pretrained, file.content_type.split('/')[-1]]
-    };
+    }
 
     requestsQueue.put(req)
 
